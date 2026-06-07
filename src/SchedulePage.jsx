@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { EMPLOYEES, getDaysInMonth, generateShiftForDay } from './scheduleConfig';
 import MonthNavigator from './components/MonthNavigator';
 import ShiftLegend from './components/ShiftLegend';
@@ -13,30 +14,31 @@ import { Share2, Link2, Palmtree, UserPlus, CalendarDays } from 'lucide-react';
 function EmpModal({emp,onClose,onFolga,onRename,onDelete}){
   const [editing,setEditing]=useState(false);
   const [name,setName]=useState(emp);
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl p-5 w-full max-w-sm shadow-xl">
+  const modal=(
+    <div style={{position:'fixed',top:0,left:0,right:0,bottom:0,backgroundColor:'rgba(0,0,0,0.5)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:9999,padding:'16px'}}>
+      <div style={{backgroundColor:'white',borderRadius:'16px',padding:'20px',width:'100%',maxWidth:'360px',boxShadow:'0 20px 60px rgba(0,0,0,0.3)'}}>
         {editing?(
           <>
-            <h2 className="text-lg font-bold mb-4">Editar Nome</h2>
-            <input value={name} onChange={e=>setName(e.target.value)} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-4" autoFocus />
-            <div className="flex gap-2">
-              <button onClick={()=>setEditing(false)} className="flex-1 py-2 rounded-lg border border-gray-200 text-gray-600 text-sm">Cancelar</button>
-              <button onClick={()=>onRename(emp,name)} className="flex-1 py-2 rounded-lg bg-green-500 text-white text-sm font-bold">Guardar</button>
+            <h2 style={{fontSize:'18px',fontWeight:'bold',marginBottom:'16px'}}>Editar Nome</h2>
+            <input value={name} onChange={e=>setName(e.target.value)} style={{width:'100%',border:'1px solid #e5e7eb',borderRadius:'8px',padding:'8px 12px',fontSize:'14px',marginBottom:'16px',boxSizing:'border-box'}} autoFocus />
+            <div style={{display:'flex',gap:'8px'}}>
+              <button onClick={()=>setEditing(false)} style={{flex:1,padding:'8px',borderRadius:'8px',border:'1px solid #e5e7eb',color:'#6b7280',cursor:'pointer',backgroundColor:'white'}}>Cancelar</button>
+              <button onClick={()=>onRename(emp,name)} style={{flex:1,padding:'8px',borderRadius:'8px',border:'none',backgroundColor:'#22c55e',color:'white',fontWeight:'bold',cursor:'pointer'}}>Guardar</button>
             </div>
           </>
         ):(
           <>
-            <h2 className="text-lg font-bold mb-4">{emp}</h2>
-            <button onClick={()=>onFolga(emp)} className="w-full py-2 mb-2 rounded-lg bg-green-500 text-white font-bold">Editar Folgas</button>
-            <button onClick={()=>setEditing(true)} className="w-full py-2 mb-2 rounded-lg bg-blue-100 text-blue-600 font-bold">Renomear</button>
-            <button onClick={()=>onDelete(emp)} className="w-full py-2 mb-2 rounded-lg bg-red-100 text-red-600 font-bold">Excluir</button>
-            <button onClick={onClose} className="w-full py-2 rounded-lg border border-gray-200 text-gray-600">Cancelar</button>
+            <h2 style={{fontSize:'18px',fontWeight:'bold',marginBottom:'16px'}}>{emp}</h2>
+            <button onClick={()=>onFolga(emp)} style={{width:'100%',padding:'10px',marginBottom:'8px',borderRadius:'8px',border:'none',backgroundColor:'#22c55e',color:'white',fontWeight:'bold',cursor:'pointer'}}>Editar Folgas</button>
+            <button onClick={()=>setEditing(true)} style={{width:'100%',padding:'10px',marginBottom:'8px',borderRadius:'8px',border:'none',backgroundColor:'#dbeafe',color:'#1d4ed8',fontWeight:'bold',cursor:'pointer'}}>Renomear</button>
+            <button onClick={()=>onDelete(emp)} style={{width:'100%',padding:'10px',marginBottom:'8px',borderRadius:'8px',border:'none',backgroundColor:'#fee2e2',color:'#b91c1c',fontWeight:'bold',cursor:'pointer'}}>Excluir</button>
+            <button onClick={onClose} style={{width:'100%',padding:'10px',borderRadius:'8px',border:'1px solid #e5e7eb',backgroundColor:'white',color:'#6b7280',cursor:'pointer'}}>Cancelar</button>
           </>
         )}
       </div>
     </div>
   );
+  return createPortal(modal,document.body);
 }
 
 const SK='shiftflow';
@@ -77,7 +79,7 @@ export default function SchedulePage(){
   const [folgaEmp,setFolgaEmp]=useState(null);
   const [editEmp,setEditEmp]=useState(null);
   const [gen,setGen]=useState(false);
-  const tableRef=useRef(null);useEffect(()=>{document.body.style.overflow=(showShare||showAdd||showVac||showSync||editEmp||folgaEmp)?"hidden":"auto";},[showShare,showAdd,showVac,showSync,editEmp,folgaEmp]);
+  const tableRef=useRef(null);
   const mk=year+'-'+month;
   const sch=all[mk]||{};
   function upd(s){const u={...all,[mk]:s};setAll(u);save(u);}
@@ -125,7 +127,7 @@ export default function SchedulePage(){
           </div>
         </div>
         <div className="flex gap-2">
-          <button onClick={()=>{window.scrollTo(0,0);setShowShare(true);}} className="w-9 h-9 flex items-center justify-center rounded-full bg-green-100 text-green-600"><Share2 size={18}/></button>
+          <button onClick={()=>setShowShare(true)} className="w-9 h-9 flex items-center justify-center rounded-full bg-green-100 text-green-600"><Share2 size={18}/></button>
           <button onClick={()=>setShowSync(true)} className="w-9 h-9 flex items-center justify-center rounded-full bg-blue-100 text-blue-600"><Link2 size={18}/></button>
           <button onClick={()=>setShowVac(true)} className="w-9 h-9 flex items-center justify-center rounded-full bg-yellow-100 text-yellow-600"><Palmtree size={18}/></button>
           <button onClick={()=>setShowAdd(true)} className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 text-gray-600"><UserPlus size={18}/></button>
@@ -133,7 +135,7 @@ export default function SchedulePage(){
       </div>
       <MonthNavigator year={year} month={month} onChange={(y,m)=>{setYear(y);setMonth(m);}} />
       <ShiftLegend />
-      <div ref={tableRef} style={{width:"max-content",minWidth:"100%"}}>
+      <div ref={tableRef}>
         <ScheduleTable year={year} month={month} schedule={sch} onChange={onCell} onEmployeeClick={e=>setEditEmp(e)} employees={emps} />
       </div>
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-3 py-2 flex gap-2">
